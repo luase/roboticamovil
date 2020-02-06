@@ -12,7 +12,7 @@ S = @(ts, tf) [ts^5    ts^4    ts^3   ts^2 ts 1;
      20*ts^3 12*ts^2 6*ts   2    0  0;
      20*tf^3 12*tf^2 6*tf   2    0  0];
 
-pos = zeros(3, 3, 200);
+pos = zeros(3, 3, 300);
 % Desired boundary conditions for position, velocity and acceleration
 ss = 0;
 sf = 1;
@@ -32,10 +32,7 @@ sdot = polyval(sdotcoef, t);
 sddot = polyval(sddotcoef, t);
 
 % Generating a multi-point trajectory
-theta = 2*pi/4;
-R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-P = [1; 0];
-p0 = P;
+p0 = [1; 0];
 p1 = [0; -1];
 p2 = [-1; 0];
 p3 = [0; 1];
@@ -107,6 +104,40 @@ y = [y polyval(scoef, t)];
 ydot = [ydot polyval(sdotcoef, t)];
 yddot = [yddot polyval(sddotcoef, t)];
 tg = [tg t];
+% p2 to p3
+% X
+ss = p2(1);
+sf = p3(1);
+sdots = 0;
+sdotf = 0;
+sddots = 0;
+sddotf = 0;
+bcond = [ss sf sdots sdotf sddots sddotf]';
+A = S(2*tf,3*tf);
+scoef = A\bcond;
+sdotcoef = scoef(1:5)'.*[5 4 3 2 1];
+sddotcoef = scoef(1:4)'.*[20 12 6 2];
+t = linspace(2*tf, 3*tf, 100);
+x = [x polyval(scoef, t)];
+xdot = [xdot polyval(sdotcoef, t)];
+xddot = [xddot polyval(sddotcoef, t)];
+% Y
+ss = p2(2);
+sf = p3(2);
+sdots = 0;
+sdotf = 0;
+sddots = 0;
+sddotf = 0;
+bcond = [ss sf sdots sdotf sddots sddotf]';
+A = S(2*tf,3*tf);
+scoef = A\bcond;
+sdotcoef = scoef(1:5)'.*[5 4 3 2 1];
+sddotcoef = scoef(1:4)'.*[20 12 6 2];
+t = linspace(2*tf, 3*tf, 100);
+y = [y polyval(scoef, t)];
+ydot = [ydot polyval(sdotcoef, t)];
+yddot = [yddot polyval(sddotcoef, t)];
+tg = [tg t];
 
 subplot(3,1,1)
 plot(tg, x, tg, y)
@@ -115,6 +146,6 @@ plot(tg, xdot, tg, ydot)
 subplot(3,1,3)
 plot(tg, xddot, tg, yddot)
 
-for i=1:200
+for i=1:300
     pos(:,:,i) = SE2(x(i), y(i), 0);
 end
