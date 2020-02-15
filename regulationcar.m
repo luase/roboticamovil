@@ -23,7 +23,7 @@ for i=1:np
     T(:,:,i) = SE2(y(i,1), y(i,2), y(i,3));
 end
 
-%tranimate2(T)
+tranimate2(T)
 figure(1)
 trplot2(T(:,:,1), 'frame', 'inicio')
 hold

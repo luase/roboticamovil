@@ -4,21 +4,21 @@
 %         <jpi.ramirez@ugto.mx>
 % Robotica Movil
 ts = 0;
-tf = 5;
-tstep = 5;
+tf = 6;
+tstep = 6;
 
 t = [];
 y = [];
 yy = [0 0 0];
 
-for k=1:4
+for k=1:8
     v = 10/5;
     [tt, yy] = ode45(@(t, x) ucycle(x, v, 0), [ts tf], yy(end,:)');
     t = [t; tt];
     y = [y; yy];
     ts = tf;
     tf = tf + tstep;
-    omega = (pi/2)/5;
+    omega = (pi/2)/4;
     [tt, yy] = ode45(@(t, x) ucycle(x, 0, omega), [ts tf], yy(end,:)');
     t = [t; tt];
     y = [y; yy];
