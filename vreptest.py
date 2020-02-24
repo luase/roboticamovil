@@ -28,9 +28,9 @@ for i in range(16):
 
 t = time.time()
 
-while (time.time()-t) < 10:
+while (time.time()-t) < 5:
     err = vrep.simxSetJointTargetVelocity(clientID, motorL, 1.0, vrep.simx_opmode_streaming)
-    err = vrep.simxSetJointTargetVelocity(clientID, motorR, 0.0, vrep.simx_opmode_streaming)
+    err = vrep.simxSetJointTargetVelocity(clientID, motorR, 1.0, vrep.simx_opmode_streaming)
     smeasure = []
     for i in range(16):
         err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_buffer)
