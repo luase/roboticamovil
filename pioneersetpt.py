@@ -1,7 +1,8 @@
 import numpy as np
 import time
 import math as m
-import vrep # access all the VREP elements
+import sys
+import sim as vrep # access all the VREP elements
 vrep.simxFinish(-1) # just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19999,True,True,5000,5) # start a connection
 if clientID!=-1:
