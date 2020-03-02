@@ -29,14 +29,14 @@ for i in range(16):
 ret, carpos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_streaming)
 ret, carrot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_streaming)
 
-Kv = 0.5;
-Kh = 2.5;
-xd = 0;
-yd = 0;
-hd = 0;
-r = 0.1;
-L = 0.2;
-errp = 10;
+Kv = 0.5
+Kh = 2.5
+xd = 0
+yd = 0
+hd = 0
+r = 0.1
+L = 0.2
+errp = 10
 
 while errp > 0.1:
     ret, carpos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
