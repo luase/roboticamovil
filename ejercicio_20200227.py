@@ -45,7 +45,7 @@ t = time.time()
 err, pos = sim.simxGetObjectPosition(clientID, robot, -1, sim.simx_opmode_streaming)
 err, ang = sim.simxGetObjectOrientation(clientID, robot, -1, sim.simx_opmode_streaming)
 
-while(time.time() - t < 20):
+while(time.time() - t < 100):
     err, pos = sim.simxGetObjectPosition(clientID, robot, -1, sim.simx_opmode_buffer)
     err, ang = sim.simxGetObjectOrientation(clientID, robot, -1, sim.simx_opmode_buffer)
 
