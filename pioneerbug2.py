@@ -58,7 +58,6 @@ Kv = 0.3
 Kh = 1.0
 xd = 3
 yd = 3
-hd = 0
 r = 0.5*0.195
 L = 0.311
 errp = 10
@@ -67,8 +66,6 @@ while errp > 0.1:
     ret, carpos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
     ret, carrot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_blocking)
     errp = m.sqrt((xd-carpos[0])**2 + (yd-carpos[1])**2)
-    angd = m.atan2(yd-carpos[1], xd-carpos[0])
-    errh = angd-carrot[2]
 
     uread = []
     ustate = []
