@@ -2,7 +2,7 @@ import numpy as np
 import time
 import math as m
 import sys
-import sim as vrep # access all the VREP elements
+import vrep # access all the VREP elements
 
 def q2R(x,y,z,w):
     R = np.zeros((3,3))
@@ -70,4 +70,5 @@ while (time.time()-t) < 10:
 
 while (time.time()-t) < 20:
     time.sleep(0.1)
-    vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
+
+vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)

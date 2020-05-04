@@ -2,7 +2,7 @@ import numpy as np
 import time
 import math as m
 import sys
-import sim as vrep # access all the VREP elements
+import vrep # access all the VREP elements
 import scipy.interpolate as spi
 
 # Velocity and angle function

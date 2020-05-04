@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import os
 import vrep # access all the VREP elements
 from skimage.draw import line
+import sys
 
 def q2R(x,y,z,w):
     R = np.zeros((3,3))
@@ -44,17 +45,17 @@ err, motorR = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor', vrep
 err, robot = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx', vrep.simx_opmode_blocking)
 
 # Assigning handles to the ultrasonic sensors
-usensor = []
+sensorUltrasonico = []
 for i in range(1,17):
     err, s = vrep.simxGetObjectHandle(clientID, 'Pioneer_p3dx_ultrasonicSensor'+str(i), vrep.simx_opmode_blocking)
-    usensor.append(s)
+    sensorUltrasonico.append(s)
 
 # Sensor initialization
 for i in range(16):
-    err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_streaming)
+    err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, sensorUltrasonico[i], vrep.simx_opmode_streaming)
 
-ret, carpos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_streaming)
-ret, carrot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_streaming)
+ret, robotPosition = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_streaming)
+# ret, robotRotation = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_streaming)
 
 Kv = 0.5
 Kh = 2.5
@@ -63,25 +64,25 @@ yd = 3
 hd = 0
 r = 0.1
 L = 0.2
-errp = 10
+# errp = 10
 
 if os.path.exists('map.txt'):
     print('Map found. Loading...')
-    occgrid = np.loadtxt('map.txt')
-    tocc = 1.0*(occgrid > 0.5)
-    occgrid[occgrid > 0.5] = 0
+    matrizDeOcupacion = np.loadtxt('map.txt')
+    tocc = 1.0*(matrizDeOcupacion > 0.5)
+    matrizDeOcupacion[matrizDeOcupacion > 0.5] = 0
 else:
     print('Creating new map')
-    occgrid = 0.5*np.ones((100,100))
+    matrizDeOcupacion = 0.5*np.ones((100,100))
     tocc = np.zeros((100,100))
 plt.figure(2)
 t = time.time()
 
 while time.time()-t < 60:
-    ret, carpos = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
+    ret, robotPosition = vrep.simxGetObjectPosition(clientID, robot, -1, vrep.simx_opmode_blocking)
 
-    xw = carpos[0]
-    yw = carpos[1]
+    xw = robotPosition[0]
+    yw = robotPosition[1]
     xr = 50 + m.ceil(xw/0.1)
     yr = 50 - m.floor(yw/0.1)
     print('Rows {}   Cols {}'.format(yr, xr))
@@ -89,26 +90,26 @@ while time.time()-t < 60:
         xr = 100
     if yr >= 100:
         yr = 100
-    occgrid[yr-1, xr-1] = 0
+    matrizDeOcupacion[yr-1, xr-1] = 0
 
-    ret, carrot = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_blocking)
-    errp = m.sqrt((xd-carpos[0])**2 + (yd-carpos[1])**2)
-    angd = m.atan2(yd-carpos[1], xd-carpos[0])
-    errh = angd-carrot[2]
+    # ret, robotRotation = vrep.simxGetObjectOrientation(clientID, robot, -1, vrep.simx_opmode_blocking)
+    # errp = m.sqrt((xd-robotPosition[0])**2 + (yd-robotPosition[1])**2)
+    # angd = m.atan2(yd-robotPosition[1], xd-robotPosition[0])
+    # errh = angd-robotRotation[2]
 
-    uread = []
-    ustate = []
-    upt = []
+    puntosDetectados = []
+    estadosDeteccion = []
+    # upt = []
     for i in range(16):
-       err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, usensor[i], vrep.simx_opmode_buffer)
-       print(detectedObj)
-       ret, objpos = vrep.simxGetObjectPosition(clientID, detectedObj, -1, vrep.simx_opmode_blocking)
-       print(objpos)
-       uread.append(np.linalg.norm(point))
-       upt.append(point)
-       ustate.append(state)
-       ret, srot = vrep.simxGetObjectQuaternion(clientID, usensor[i], -1, vrep.simx_opmode_blocking)
-       ret, spos = vrep.simxGetObjectPosition(clientID, usensor[i], -1, vrep.simx_opmode_blocking)
+       err, state, point, detectedObj, detectedSurfNormVec = vrep.simxReadProximitySensor(clientID, sensorUltrasonico[i], vrep.simx_opmode_buffer)
+    #    print(detectedObj)
+    #    ret, objpos = vrep.simxGetObjectPosition(clientID, detectedObj, -1, vrep.simx_opmode_blocking)
+    #    print(objpos)
+       puntosDetectados.append(np.linalg.norm(point))
+    #    upt.append(point)
+       estadosDeteccion.append(state)
+       ret, srot = vrep.simxGetObjectQuaternion(clientID, sensorUltrasonico[i], -1, vrep.simx_opmode_blocking)
+       ret, spos = vrep.simxGetObjectPosition(clientID, sensorUltrasonico[i], -1, vrep.simx_opmode_blocking)
        R = q2R(srot[0], srot[1], srot[2], srot[3])
        spos = np.array(spos).reshape((3,1))
        if i % 2 != 0:
@@ -128,7 +129,7 @@ while time.time()-t < 60:
                yo = 100
 
            rows, cols = line(yr-1, xr-1, yo-1, xo-1)
-           occgrid[rows, cols] = 0
+           matrizDeOcupacion[rows, cols] = 0
            tocc[yo-1, xo-1] = 1
 
        else:
@@ -144,24 +145,24 @@ while time.time()-t < 60:
            if yo >= 100:
                yo = 100
            rows, cols = line(yr-1, xr-1, yo-1, xo-1)
-           occgrid[rows, cols] = 0
+           matrizDeOcupacion[rows, cols] = 0
 
     v = 0.5
-    if v > 0.5:
-        v = 0.5
+    # if v > 0.5:
+    #     v = 0.5
 
     omega = 0
-    if omega > 2.5:
-        omega = 2.5
-    elif omega < -2.5:
-        omega = -2.5
+    # if omega > 2.5:
+    #     omega = 2.5
+    # elif omega < -2.5:
+    #     omega = -2.5
 
-    if ustate[2] == True and uread[2] < 0.8:
-        print('Imminent collision at '+str(uread[4]))
+    if estadosDeteccion[2] == True and puntosDetectados[2] < 0.8:
+        print('Imminent collision at '+str(puntosDetectados[4]))
         omega = -1.5-0.1*random.random()
         v = 0.1+0.1*random.random()
-    if ustate[5] == True and uread[5] < 0.8:
-        print('Imminent collision at '+str(uread[4]))
+    if estadosDeteccion[5] == True and puntosDetectados[5] < 0.8:
+        print('Imminent collision at '+str(puntosDetectados[4]))
         omega = 1.5+0.1*random.random()
         v = 0.1+0.1*random.random()
 
@@ -173,7 +174,7 @@ while time.time()-t < 60:
     time.sleep(0.005)
 
 plt.figure(1)
-plt.imshow(tocc+occgrid)
+plt.imshow(tocc+matrizDeOcupacion)
 plt.show()
-np.savetxt('map.txt', tocc+occgrid)
+np.savetxt('map.txt', tocc+matrizDeOcupacion)
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)

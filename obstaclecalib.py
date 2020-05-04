@@ -2,7 +2,7 @@ import numpy as np
 import time
 import math as m
 import sys
-import sim as vrep # access all the VREP elements
+import vrep # access all the VREP elements
 from q2R import q2R
 
 vrep.simxFinish(-1) # just in case, close all opened connections
@@ -33,7 +33,8 @@ err, psr = vrep.simxGetObjectPosition(clientID, usensor[2], robot, vrep.simx_opm
 
 err, osr = vrep.simxGetObjectOrientation(clientID, usensor[2], robot, vrep.simx_opmode_streaming)
 err, osr = vrep.simxGetObjectOrientation(clientID, usensor[2], robot, vrep.simx_opmode_buffer)
-
+print(psr)
+print(osr)
 Rsr = q2R(osr[0], osr[1], osr[2], osr[3])
 tsr = np.array(psr).resize((3,1))
 
