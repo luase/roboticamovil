@@ -7,23 +7,36 @@ from scipy.ndimage.morphology import binary_dilation
 from skimage.morphology import selem
 import time
 import vrep
+import random
 
 # Funciones
 def grid2world(x, y):
     '''
-    Función para transformar coordenadas de la matriz de 
+    Función para transformar coordenadas de la matriz de
     ocupación al mundo
     '''
     xw = - 0.1*(x - 50)
     yw = - 0.1*(50 - y)
     return xw, yw
 
+def generarPuntos(mapa, distancia, puntoDeOrigen):
+    while True:
+        x = random.randint(-distancia, distancia)
+        y = random.randint(-distancia, distancia)
+        px = puntoDeOrigen[0] + x
+        py = puntoDeOrigen[1] + y
+        x_en_limite = px <= 100 and px >= 0
+        y_en_limite = py <= 100 and py >= 0
+        if x_en_limite and y_en_limite and mapa[px][py] != 1 :
+            break
+    return px, py
 
 # Variables globales
-ensanchamiento = 4
-punto_de_origen = (9,9)
-punto_de_llegada = (90, 90)
-
+n = 4 #numero de robots
+ensanchamiento = 0
+# punto_de_origen = (9,9)
+puntos_de_origen =[(9,9),(9,90),(90,90),(90,9)]
+#punto_de_llegada = (90, 90)
 
 # Cargamos el mapa existente, o en su caso terminamos el programa
 if os.path.exists('tarea-3/map.txt'):
@@ -48,6 +61,10 @@ mapa = np.uint8(tocc > 0.5)
 disco = selem.disk(ensanchamiento)
 mapa_ensanchado = binary_dilation(input=mapa, structure=disco)
 
+#Generamos puntos random de llegada
+puntos_de_llegada = []
+for i in range(n):
+    puntos_de_llegada.append(generarPuntos(mapa,35,puntos_de_origen[i]))
 
 # Mostrar los resultados usando plt
 plt.figure(2)
@@ -56,19 +73,29 @@ plt.show()
 
 
 # Generamos la ruta
-ruta_tuplas = astarmod.astar(mapa_ensanchado, punto_de_origen, punto_de_llegada, allow_diagonal_movement=False)
-renglones, columnas = astarmod.path2cells(ruta_tuplas)
+#ruta_tuplas = astarmod.astar(mapa_ensanchado, punto_de_origen, punto_de_llegada, allow_diagonal_movement=False)
+rutas_tuplas = []
 
+for i in range(n):
+    rutas_tuplas.append(astarmod.astar(mapa_ensanchado, puntos_de_origen[i], puntos_de_llegada[i], allow_diagonal_movement=True))
+
+#renglones, columnas = astarmod.path2cells(ruta_tuplas)
+columnas = []
+renglones = []
+for i in range(n):
+   renglon, columna = astarmod.path2cells(rutas_tuplas[i])
+   columnas.append(columna)
+   renglones.append(renglon)
 
 # Mostrar los resultados de la ruta usando plt
 mapa_ruta = np.zeros((100, 100))
-for i, punto in enumerate(zip(renglones, columnas)):
-    mapa_ruta[renglones[i]][columnas[i]] = 0.5
-    print(punto)
+for j in range(n):
+    for i, punto in enumerate(zip(renglones[j], columnas[j])):
+        mapa_ruta[renglones[j][i]][columnas[j][i]] = 0.5
+        print(punto)
 plt.figure(3)
 plt.imshow(mapa_ruta+mapa_ensanchado)
 plt.show()
-
 
 # Generar el movimiento del robot
 # Establecer conexión con el api
